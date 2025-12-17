@@ -4,9 +4,8 @@ if (!process.env.MONGODB_URI) {
   throw new Error('❌ Missing environment variable: MONGODB_URI');
 }
 
-const uri = process.env.MONGODB_URI;
+const uri: string = process.env.MONGODB_URI;
 
-// خيارات آمنة ومناسبة لـ Vercel
 const options = {
   serverSelectionTimeoutMS: 10_000,
   maxPoolSize: 10,
@@ -15,8 +14,10 @@ const options = {
 let client: MongoClient;
 let clientPromise: Promise<MongoClient>;
 
-// نستخدم global في كل البيئات (حتى production)
-// لأن Vercel Serverless بيعمل reuse للـ instance
+/**
+ * Extend the NodeJS global object
+ * to cache the MongoDB connection across hot reloads & serverless invocations
+ */
 declare global {
   // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined;
@@ -34,8 +35,9 @@ export async function connectToDatabase(): Promise<{
   db: Db;
 }> {
   const client = await clientPromise;
-  const dbName = process.env.MONGODB_DB_NAME ?? "wedding";
-  const db = client.db(dbName);
+
+  const dbName: string = process.env.MONGODB_DB_NAME ?? "wedding";
+  const db: Db = client.db(dbName);
 
   return { client, db };
 }
