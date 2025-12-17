@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { createWeddingIcs } from "@/lib/createWeddingIcs";
+import { connectToDatabase } from "@/lib/mongodb"; // You'll need to create this
 
 export async function POST(req: NextRequest) {
   try {
@@ -19,8 +20,22 @@ export async function POST(req: NextRequest) {
 
     console.log("RSVP:", { name, email, status, message });
 
-
-
+    // Save to MongoDB
+    try {
+      const { db } = await connectToDatabase();
+      await db.collection("rsvps").insertOne({
+        name,
+        email,
+        status,
+        message,
+        createdAt: new Date(),
+        ipAddress: req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown",
+      });
+      console.log("✅ Saved to MongoDB");
+    } catch (dbError) {
+      console.error("❌ MongoDB error:", dbError);
+      // Continue even if DB fails - don't block the email
+    }
 
     const icsContent = createWeddingIcs({ guestName: name, guestEmail: email });
 
@@ -38,7 +53,7 @@ export async function POST(req: NextRequest) {
 
     const subject = isComing
       ? "🎉 Thank you for confirming – Mahmoud & Sajda Wedding"
-      : "❤️ Thank you – we’ll miss you at the wedding";
+      : "❤️ Thank you – we'll miss you at the wedding";
 
     const textMessage = isComing
       ? `Dear ${name},
@@ -55,7 +70,7 @@ Mahmoud & Sajda`
 
 Thank you for your wishes!
 
-We’re sad you can’t join, but we really appreciate your love and message.
+We're sad you can't join, but we really appreciate your love and message.
 
 Best,
 Mahmoud & Sajda`;
@@ -69,7 +84,7 @@ Mahmoud & Sajda`;
       }</p>
       ${
         isComing
-          ? "<p>You’ll find a calendar event attached so you can save the date easily.</p>"
+          ? "<p>You'll find a calendar event attached so you can save the date easily.</p>"
           : ""
       }
       <p>Your message to us:</p>
@@ -79,6 +94,7 @@ Mahmoud & Sajda`;
       <p>With love,<br/>Mahmoud &amp; Sajda</p>
     `;
 
+    // Send email to guest
     await transporter.sendMail({
       from: process.env.SMTP_FROM ?? process.env.SMTP_USER,
       to: email,
@@ -95,6 +111,57 @@ Mahmoud & Sajda`;
           ]
         : [],
     });
+
+    console.log("✅ Sent email to guest");
+
+    // Forward RSVP notification to specific email
+    const notificationEmail = process.env.NOTIFICATION_EMAIL; // e.g., "mahmoud@example.com"
+    
+    if (notificationEmail) {
+      const statusEmoji = isComing ? "✅" : "❌";
+      const notificationSubject = `${statusEmoji} New RSVP: ${name} - ${isComing ? "Coming" : "Can't Make It"}`;
+      
+      const notificationHtml = `
+        <h2>New RSVP Received</h2>
+        <table style="border-collapse: collapse; width: 100%; max-width: 600px;">
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background: #f5f5f5;">Name</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${name}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background: #f5f5f5;">Email</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${email}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background: #f5f5f5;">Status</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">
+              <strong style="color: ${isComing ? 'green' : 'orange'};">
+                ${isComing ? "✅ Coming" : "❌ Can't Make It"}
+              </strong>
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background: #f5f5f5;">Message</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">
+              ${message ? message.replace(/\n/g, "<br/>") : "<i>No message</i>"}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding: 8px; border: 1px solid #ddd; font-weight: bold; background: #f5f5f5;">Time</td>
+            <td style="padding: 8px; border: 1px solid #ddd;">${new Date().toLocaleString()}</td>
+          </tr>
+        </table>
+      `;
+
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM ?? process.env.SMTP_USER,
+        to: notificationEmail,
+        subject: notificationSubject,
+        html: notificationHtml,
+      });
+
+      console.log("✅ Forwarded notification email");
+    }
 
     return NextResponse.json({ ok: true });
   } catch (err) {

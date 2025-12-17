@@ -236,24 +236,31 @@ export default function WeddingPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 1, duration: 0.8 }}
             >
-              <TechInfoCard 
+                           <TechInfoCard 
                 icon="📅" 
                 label="DATE" 
-                value="20 Dec 2025"
+                value="2 Jan 2026"
                 color="from-pink-500 to-purple-500"
               />
               <TechInfoCard 
                 icon="⏰" 
                 label="TIME" 
-                value="7:00 PM"
+                value="3:00 PM"
                 color="from-cyan-500 to-blue-500"
               />
-              <TechInfoCard 
-                icon="📍" 
-                label="LOCATION" 
-                value="Cairo, Egypt"
-                color="from-emerald-500 to-teal-500"
-              />
+              <a 
+                href="https://www.google.com/maps/place/Solitaire+Hall+Maadi%D8%8C+%D8%AF%D8%A7%D8%B1+%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%D8%8C%D8%8C+Cairo+Governorate%E2%80%AD/data=!4m2!3m1!1s0x145847916b32b001:0xb0245444266c23e7?utm_source=mstt_1&entry=gps"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block"
+              >
+                <TechInfoCard 
+                  icon="📍" 
+                  label="LOCATION" 
+                  value="Solitaire Hall, Maadi"
+                  color="from-emerald-500 to-teal-500"
+                />
+              </a>
             </motion.div>
 
             {/* Timeline */}
