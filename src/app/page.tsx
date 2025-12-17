@@ -221,7 +221,7 @@ export default function WeddingPage() {
               >
                 <div className="space-y-1 text-slate-300">
                   <div><span className="text-purple-400">class</span> <span className="text-cyan-400">Wedding</span> &#123;</div>
-                  <div className="pl-4"><span className="text-pink-400">SeniorAndroidDev</span> mahmoud;</div>
+                  <div className="pl-4"><span className="text-pink-400">MobileDev</span> mahmoud;</div>
                   <div className="pl-4"><span className="text-emerald-400">BackendDev</span> sajda;</div>
                   <div className="pl-4 text-slate-500">// Two developers, one love story 💕</div>
                   <div>&#125;</div>
@@ -257,7 +257,7 @@ export default function WeddingPage() {
                 <TechInfoCard 
                   icon="📍" 
                   label="LOCATION" 
-                  value="Solitaire Hall, Maadi"
+                  value="Solitaire view, Corniche El Maadi"
                   color="from-emerald-500 to-teal-500"
                 />
               </a>
@@ -278,9 +278,9 @@ export default function WeddingPage() {
                   EVENT TIMELINE
                 </p>
                 <div className="space-y-3">
-                  <TimelineItem time="7:00 PM" event="Guests arrival & welcome" icon="🎯" />
-                  <TimelineItem time="8:00 PM" event="Ceremony & photos" icon="💍" />
-                  <TimelineItem time="9:00 PM" event="Dinner, music & dancing" icon="🎶" />
+                  <TimelineItem time="3:00 PM" event="Guests arrival & welcome" icon="🎯" />
+                  <TimelineItem time="4:00 PM" event="Ceremony & photos" icon="💍" />
+                  <TimelineItem time="5:00 PM" event="Dinner, music & dancing" icon="🎶" />
                 </div>
               </div>
             </motion.div>
